@@ -39,7 +39,7 @@ export const DemoApp: React.FC = () => {
   return (
     <div className="demo-container">
       <header className="demo-header">
-        <h1>Dodo Store</h1>
+        <h1>Course Store</h1>
       </header>
 
       <main className="demo-main">
