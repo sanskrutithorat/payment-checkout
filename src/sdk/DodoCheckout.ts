@@ -11,9 +11,8 @@ const ENV_ORIGIN = import.meta.env.VITE_CHECKOUT_ORIGIN;
 const isLocalhostEnv = ENV_ORIGIN?.includes('localhost');
 const isDeployed = !window.location.origin.includes('localhost');
 
-// If deployed but env is still localhost (e.g. from committed .env file), fallback to the deployed origin
-const CHECKOUT_ORIGIN = (isLocalhostEnv && isDeployed) 
-  ? window.location.origin 
+const CHECKOUT_ORIGIN = (isLocalhostEnv && isDeployed)
+  ? window.location.origin
   : (ENV_ORIGIN || window.location.origin);
 
 class DodoCheckoutSDK {
