@@ -204,7 +204,7 @@ export const CheckoutApp: React.FC = () => {
     <div className="checkout-container">
       <header className="checkout-header">
         <div className="product-info">
-          <h2 tabIndex={-1}>Premium Developer Plan</h2>
+          <h2 tabIndex={-1}>Premium Course Plan</h2>
           <div className="price">₹999</div>
         </div>
         <button
@@ -237,7 +237,7 @@ export const CheckoutApp: React.FC = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="developer@example.com"
+            placeholder="student@example.com"
             disabled={isProcessing}
             autoComplete="email"
             className={errors.email ? 'error' : ''}

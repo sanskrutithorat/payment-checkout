@@ -41,34 +41,34 @@ export const DemoApp: React.FC = () => {
       <header className="demo-header">
         <h1>Dodo Store</h1>
       </header>
-      
+
       <main className="demo-main">
         <section className="demo-product">
           <div className="product-card">
-            <h2>Premium Developer Plan</h2>
-            <p className="price">₹999 <span>/ month</span></p>
+            <h2>Premium Course Plan</h2>
+            <p className="price">₹999</p>
             <ul className="features">
               <li>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                Unlimited API requests
+                100+ HD video lessons
               </li>
               <li>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                24/7 Priority support
+                Full lifetime access
               </li>
               <li>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                Advanced analytics
+                Certificate of completion
               </li>
             </ul>
-            <button 
-              className="buy-button" 
+            <button
+              className="buy-button"
               onClick={handleBuyClick}
               disabled={isCheckoutOpen}
             >
