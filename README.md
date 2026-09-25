@@ -1,49 +1,79 @@
-# Dodo Checkout
+# Payment Checkout
 
-Dodo Checkout is a small, polished, embeddable checkout application designed to demonstrate strong frontend engineering, UX, TypeScript, and architecture skills.
+A small embeddable checkout built with React, TypeScript and Vite.
 
-## Overview
-Dodo Checkout simulates a modern payment flow. It features three conceptually separated pieces:
-1. **Demo merchant (`DemoApp.tsx`)**: The host website selling a product.
-2. **SDK (`DodoCheckout.ts`)**: A framework-agnostic script the merchant integrates.
-3. **Checkout app (`CheckoutApp.tsx`)**: The secure, isolated iframe application hosted by the payment provider.
+This project includes a demo store, a small checkout SDK, and a separate checkout page that is loaded inside an iframe. Payments are simulated locally using test card numbers.
 
-## Architecture
-**Flow:**
-`Merchant` -> `SDK` -> `iframe` -> `Checkout App`
-`Checkout App` -> `postMessage` -> `SDK` -> `callbacks` -> `Merchant`
+## Installation
 
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   cd payment-checkout
+   ```
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+This will start the local server (usually at `http://localhost:5173`). Open it in your browser to see the demo app.
 
-## Running Locally
+## How to Use
 
-To run the project locally, follow these steps:
+The merchant website integrates the checkout using the SDK (`DodoCheckout.ts`). 
 
-```bash
-# 1. Install dependencies
-npm install
+You can open the checkout by calling `DodoCheckout.open()` and passing the required options:
 
-# 2. Start the development server
-npm run dev
+```typescript
+import { DodoCheckout } from './sdk/DodoCheckout';
+
+DodoCheckout.open({
+  productId: 'prod_123',
+  onSuccess: ({ sessionId }) => {
+    console.log('Payment successful! Session ID:', sessionId);
+  },
+  onClose: ({ reason }) => {
+    console.log('Checkout closed. Reason:', reason);
+  },
+  onError: ({ code, message }) => {
+    console.error('Payment error:', code, message);
+  },
+});
 ```
 
-The app will be available at `http://localhost:5173`. 
+### Callbacks
+- **`onSuccess`**: Triggered when a payment is simulated successfully. Returns a `sessionId`.
+- **`onClose`**: Triggered when the checkout iframe is closed by the user or upon successful completion. Returns the `reason` (`"user"`, `"success"`, etc).
+- **`onError`**: Triggered when the payment simulation encounters an error. Returns an error `code` and `message`.
 
-## Test Cards
+## How it works
 
-You can use the following test cards to verify different payment behaviors. 
+The architecture consists of three main parts:
 
-| Scenario | Card Number | Expected Behavior |
-|----------|-------------|-------------------|
-| **Success** | `4242 4242 4242 4242` | Simulates a successful payment. |
-| **Declined** | `4000 0000 0000 0002` | Fails with a card declined error. User can retry. |
-| **Fail once, succeed** | `4000 0000 0000 0341` | First attempt fails. Second attempt succeeds. |
+- **Demo app** (`src/demo/DemoApp.tsx`) - acts as the merchant website. It has a product and a "Buy Now" button.
+- **SDK** (`src/sdk/DodoCheckout.ts`) - creates and manages the checkout iframe and exposes lifecycle callbacks to the merchant.
+- **Checkout app** (`src/checkout/CheckoutApp.tsx` or similar) - runs inside the iframe and handles the payment form and simulated payment flow.
 
-Any other card will produce a generic "Invalid test card" error.
+### Communication
 
-## Edge Cases Handled
-- **Duplicate Buy clicks:** The SDK ignores repeated `open()` calls if the checkout is already open. The Demo app also disables the buy button while active.
-- **Duplicate Pay clicks:** The checkout form disables the submit button while processing.
-- **Payment failures:** Checkout stays open and allows the user to retry gracefully.
-- **Retry logic:** The `0341` card fails on the first attempt but guarantees success on the second.
-- **Iframe load failure:** The SDK waits up to 10 seconds for the iframe to broadcast a `READY` message. If it times out, it closes safely and throws an error.
-- **Unexpected postMessage:** The SDK explicitly validates both the `event.origin` and `event.source === iframe.contentWindow`, completely ignoring spoofed or unintended messages.
+The communication between the merchant (Demo App) and the Checkout (Iframe) relies on `postMessage`.
+
+```text
+Merchant
+   ↓
+DodoCheckout.open()
+   ↓
+SDK creates an iframe covering the screen
+   ↓
+Checkout app renders inside the iframe
+   ↓
+(User interacts, submits payment)
+   ↓
+postMessage sends payment results
+   ↓
+SDK receives the message
+   ↓
+Merchant callbacks (onSuccess, onError, onClose) are triggered
+```
