@@ -7,11 +7,14 @@ export interface DodoCheckoutOptions {
   onError: (data: { code: string; message: string }) => void;
 }
 
-const CHECKOUT_ORIGIN = import.meta.env.VITE_CHECKOUT_ORIGIN;
+const ENV_ORIGIN = import.meta.env.VITE_CHECKOUT_ORIGIN;
+const isLocalhostEnv = ENV_ORIGIN?.includes('localhost');
+const isDeployed = !window.location.origin.includes('localhost');
 
-if (!CHECKOUT_ORIGIN) {
-  throw new Error('VITE_CHECKOUT_ORIGIN is required');
-}
+// If deployed but env is still localhost (e.g. from committed .env file), fallback to the deployed origin
+const CHECKOUT_ORIGIN = (isLocalhostEnv && isDeployed) 
+  ? window.location.origin 
+  : (ENV_ORIGIN || window.location.origin);
 
 class DodoCheckoutSDK {
   private iframe: HTMLIFrameElement | null = null;
