@@ -19,9 +19,14 @@ class DodoCheckoutSDK {
   private options: DodoCheckoutOptions | null = null;
   private isOpen: boolean = false;
   private loadTimeout: number | null = null;
+  private pendingOptions: DodoCheckoutOptions | null = null;
+  private initInterval: number | null = null;
 
   public open(options: DodoCheckoutOptions) {
-    if (this.isOpen) return;
+    if (this.isOpen) {
+      this.pendingOptions = options;
+      return;
+    }
     this.isOpen = true;
     this.options = options;
 
@@ -66,10 +71,11 @@ class DodoCheckoutSDK {
 
     this.iframe.onload = () => {
       const initMessage: CheckoutMessage = { source: 'dodo-sdk', type: 'INIT' };
-      this.iframe?.contentWindow?.postMessage(
-        initMessage,
-        CHECKOUT_ORIGIN
-      );
+      const sendInit = () => {
+        this.iframe?.contentWindow?.postMessage(initMessage, CHECKOUT_ORIGIN);
+      };
+      sendInit();
+      this.initInterval = window.setInterval(sendInit, 500);
     };
 
     requestAnimationFrame(() => {
@@ -96,6 +102,10 @@ class DodoCheckoutSDK {
       clearTimeout(this.loadTimeout);
       this.loadTimeout = null;
     }
+    if (this.initInterval) {
+      clearInterval(this.initInterval);
+      this.initInterval = null;
+    }
 
     if (this.container && this.iframe) {
       this.container.style.opacity = '0';
@@ -115,11 +125,23 @@ class DodoCheckoutSDK {
           this.options.onClose({ reason });
         }
         this.options = null;
+
+        if (this.pendingOptions) {
+          const nextOptions = this.pendingOptions;
+          this.pendingOptions = null;
+          this.open(nextOptions);
+        }
       }, 300);
     } else {
       this.isOpen = false;
       window.removeEventListener('message', this.handleMessage);
       this.options = null;
+
+      if (this.pendingOptions) {
+        const nextOptions = this.pendingOptions;
+        this.pendingOptions = null;
+        this.open(nextOptions);
+      }
     }
   }
 
@@ -136,6 +158,10 @@ class DodoCheckoutSDK {
         if (this.loadTimeout) {
           clearTimeout(this.loadTimeout);
           this.loadTimeout = null;
+        }
+        if (this.initInterval) {
+          clearInterval(this.initInterval);
+          this.initInterval = null;
         }
         break;
 
